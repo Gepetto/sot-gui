@@ -65,9 +65,9 @@ class JsonParsingUtils:
 
     def get_data_by_key_value(dict_list: List[Dict], key: str,
                                 values: Union[Any, List[Any]]) -> Dict:
-        """ From the dictionary list, returns the first one whose key/value pair corresponds
-            to the given arguments, or None if none was found. `values` can be a single element
-            or a list of possible values.
+        """ From the dictionary list, returns the first one whose key/value pair
+            corresponds to the given arguments, or None if none was found.
+            `values` can be a single element or a list of possible values.
         """
         if isinstance(values, list):
             return get_dict_with_element_in_list(dict_list, key, values)
@@ -77,9 +77,9 @@ class JsonParsingUtils:
 
     def get_data_list_by_key_value(dict_list: List[Dict], key: str, values:
             Union[Any, List[Any]]) -> List[Dict]:
-        """ From the dictionary list, returns those whose key/value pairs correspond
-            to the given arguments, or None if none was found. `values` can be a single
-            element or a list of possible values.
+        """ From the dictionary list, returns those whose key/value pairs
+            correspond to the given arguments, or None if none was found.
+            `values` can be a single element or a list of possible values.
         """
         if isinstance(values, list):
             return get_dicts_with_element_in_list(dict_list, key, values)
@@ -91,8 +91,8 @@ j = JsonParsingUtils
 
 
 class JsonToQtGenerator:
-    """ When given dot's json output as a string, this class can generate qt items
-        for nodes, ports and edges.
+    """ When given dot's json output as a string, this class can generate qt
+        items for nodes, ports and edges.
     """
 
     def __init__(self, json_string: str):
@@ -291,7 +291,6 @@ class JsonToQtGenerator:
         if spline_data is None or spline_data.get(j.POINTS) is None:
             return None
         curve = self._generate_spline(spline_data.get(j.POINTS))
-        # TODO: add an additional path to QPainterPath if there are several bezier curves
 
         # Getting the head and setting the curve as its parent:
         head_data = j.get_data_by_key_value(edge_data.get(j.HEAD_DRAW), j.TYPE, j.T_POLYGON)
@@ -312,23 +311,65 @@ class JsonToQtGenerator:
             label in an html table.
         """
 
-        # Getting the text:
-        text_data = j.get_data_by_key_value(label_data, j.TYPE, j.T_TEXT)
-        qt_item_label = self._generate_text(text_data)
+        # Each line or differently formatted piece of text will have its own
+        # list of dictionaries
+        label_pieces_data: List[List[Dict]] = []
 
-        # Getting the font info:
-        font_data = j.get_data_by_key_value(label_data, j.TYPE, j.T_FONT)
+        # If a type of info has already been added to a list of dicts, we switch
+        # the next list
+        stored_info_types = []
 
-        # Setting its position:
-        dot_coords = (text_data[j.TEXT_POS][0], text_data[j.TEXT_POS][1])
-        qt_coords = self._dot_coords_to_qt_coords(dot_coords)
-        position = QPointF(
-            qt_coords[0] - ( (text_data[j.WIDTH] / 2) if compensate_width else 0 ),
-            qt_coords[1] - font_data[j.FONT_SIZE]
-        )
-        qt_item_label.setPos(position)
+        new_label_piece_data = []
+        for data in label_data:
 
-        return qt_item_label
+            if data[j.TYPE] in stored_info_types: # Switching to a new piece of label
+                label_pieces_data.append(new_label_piece_data)
+                new_label_piece_data = []
+                stored_info_types = []
+
+            stored_info_types.append(data[j.TYPE])
+            new_label_piece_data.append(data)
+
+        label_pieces_data.append(new_label_piece_data)
+
+        # The first piece of label will be the parent item, containing the other
+        # pieces of text
+        parent_qt_item = None
+        parent_qt_coords = None
+
+        for label_piece_data in label_pieces_data:
+
+            # Getting the text:
+            text_data = j.get_data_by_key_value(label_piece_data, j.TYPE, j.T_TEXT)
+            new_qt_item = self._generate_text(text_data)
+
+            # Getting its position in the scene:
+            font_data = j.get_data_by_key_value(label_piece_data, j.TYPE, j.T_FONT)
+            dot_coords = (text_data[j.TEXT_POS][0], text_data[j.TEXT_POS][1])
+            qt_coords = self._dot_coords_to_qt_coords(dot_coords)
+
+            if parent_qt_item is None:
+                position = QPointF(
+                    qt_coords[0] - ( (text_data[j.WIDTH] / 2) if compensate_width else 0 ),
+                    qt_coords[1] - font_data[j.FONT_SIZE]
+                )
+                new_qt_item.setPos(position)
+
+                parent_qt_coords = qt_coords
+                parent_qt_item = new_qt_item
+
+            else:
+                # The child's position is relative to its parent:
+                qt_coords = (qt_coords[0] - parent_qt_coords[0],
+                            qt_coords[1] - parent_qt_coords[1])
+                position = QPointF(
+                    qt_coords[0],
+                    qt_coords[1] + 2,
+                )
+                new_qt_item.setPos(position)
+                new_qt_item.setParentItem(parent_qt_item)
+
+        return parent_qt_item
 
 
     #
@@ -336,6 +377,15 @@ class JsonToQtGenerator:
     #
 
     def _generate_polygon(self, data: Dict[str, Any]) -> QGraphicsPolygonItem:
+        """ From dot output data, this method generates a polygon with qt
+            coordinates.
+
+            Args:
+                data: dictionary corresponding to part of the dot output,
+                    containing info on the polygon's vertices (coordinates).
+
+            Returns: the polygon as a QGraphicsPolygonItem object.
+        """
         polygon = QPolygonF()
 
         # Adding each of the polygon's points:
@@ -348,6 +398,15 @@ class JsonToQtGenerator:
 
 
     def _generate_ellipse(self, data: Dict[str, Any]) -> QGraphicsEllipseItem:
+        """ From dot output data, this method generates an ellipse with qt
+            coordinates.
+
+            Args:
+                data: dictionary corresponding to part of the dot output,
+                    containing info on the ellipse coordinates.
+
+            Returns: the ellipse as a QGraphicsEllipseItem object.
+        """
         # Gettings the ellipse's rectangle's dimensions:
         rect_data = data[j.RECT]
         width = rect_data[2] * 2
@@ -364,6 +423,15 @@ class JsonToQtGenerator:
 
 
     def _generate_text(self, data: Dict[str, Any]) -> QGraphicsTextItem:
+        """ From dot output data, this method generates text with qt
+            coordinates.
+
+            Args:
+                data: dictionary corresponding to part of the dot output,
+                    containing info on which text to display.
+
+            Returns: a QGraphicsTextItem.
+        """
         #font = QFont('Times', 14)
         text = QGraphicsTextItem(data[j.TEXT])
         #text.setFont(font)
@@ -371,6 +439,16 @@ class JsonToQtGenerator:
 
 
     def _generate_spline(self, points_data: List) -> QGraphicsPathItem:
+        """ From dot output data, this method generates a line / curve with qt
+            coordinates.
+
+            Args:
+                data: dictionary corresponding to part of the dot output,
+                    containing info on the line / curve coordinates.
+
+            Returns: a QGraphicsPathItem, containing as many QPainterPaths as
+                needed to create the whole line / curve.
+        """
         # Getting the points qt coordinates:
         coordsQt = []
         for point in points_data:
@@ -418,12 +496,31 @@ class JsonToQtGenerator:
 
 
     def _get_node_id_per_name(self, name: str) -> int:
+        """ Dot json output includes an id for each node and cluster.
+            This method allows to retrieve a node or cluster id based on its
+            name.
+
+            Arg:
+                name: name of the node or cluster to retrieve.
+
+            Returns: The id given to the node / cluster by dot.
+        """
         node = j.get_data_by_key_value(self._graph_data[j.OBJECTS], j.NAME, name)
         return node.get(j.ID)
 
 
     def _get_edge_per_nodes_names(self, head_name: str, tail_name: str) \
                                  -> Dict[str, Any]:
+        """ Returns data on the edge with the given head and tail.
+
+            Args:
+                head_name: name of the head node, i.e the node which has the
+                    wanted edge as an input.
+                tail_name: name of the tail node, i.e the node which has the
+                    wanted edge as an output.
+
+            Returns: part of the dot json output corresponding to the edge.
+        """
         # Retrieving the nodes' IDs:
         head_id = self._get_node_id_per_name(head_name)
         tail_id = self._get_node_id_per_name(tail_name)
@@ -452,7 +549,7 @@ class JsonToQtGenerator:
 
         Raises:
             RuntimeError: The json data contains info on a node with less than
-                3 cells
+                2 cells
         """
 
         if j.OBJECTS not in self._graph_data: # If the graph is empty

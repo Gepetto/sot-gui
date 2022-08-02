@@ -19,7 +19,7 @@ class DynamicGraphCommunication():
             Returns:
               True if the connection was successful, False if not.
         """
-        
+
         if self._client.connect_to_kernel() is False:
             return False
         try:
@@ -56,12 +56,12 @@ class DynamicGraphCommunication():
             ConnectionError: The kernel is not running.
         """
         response = self._client.run_python_command(code)
-            
+
         if response.stdout:
             print(response.stdout)
         if response.stderr:
             print(response.stderr)
-        
+
         if response.result:
             return response.result
 
@@ -129,7 +129,7 @@ class DynamicGraphCommunication():
 
         Args:
             entity_name: Name of the entity owning the signal.
-            signal_name: Name of the the signal.
+            signal_name: Name of the signal.
 
         Raises:
             ConnectionError: The kernel is not running.
@@ -143,7 +143,7 @@ class DynamicGraphCommunication():
 
         Args:
             entity_name: Name of the entity owning the signal.
-            signal_name: Name of the the signal.
+            signal_name: Name of the signal.
 
         Raises:
             ConnectionError: The kernel is not running.
@@ -164,3 +164,17 @@ class DynamicGraphCommunication():
         """
         return self._run(f"dg.entity.Entity.entities\
             ['{entity_name}'].signal('{signal_name}').value")
+
+
+    def get_exec_time(self, entity_name: str, signal_name: str) -> int:
+        """ Returns the time of the last execution of a signal.
+
+        Args:
+            entity_name: Name of the entity owning the signal.
+            signal_name: Name of the signal.
+
+        Raises:
+            ConnectionError: The kernel is not running.
+        """
+        return self._run(f"dg.entity.Entity.entities"
+            f"['{entity_name}'].signal('{signal_name}').time")

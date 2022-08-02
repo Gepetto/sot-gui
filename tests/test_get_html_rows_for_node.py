@@ -16,48 +16,46 @@ class TestHTMLRows(TestCase):
     def test_equal_nb_in_out(self):
         """ Cases were the number of inputs is equal to the number of outputs.
         """
-        
+
         # 1 input, 1 output:
         label = 'entity'
-        inputs = [('sin0', 'input 0')]
-        outputs = [('sout0', 'output 0')]
+        inputs = ['sin0']
+        outputs = ['sout0']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="1">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 2 inputs, 2 outputs:
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1')]
+        inputs = ['sin0', 'sin1']
+        outputs = ['sout0', 'sout1']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="2">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n\t\t</TR>\n'
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 4 inputs, 4 outputs:
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1'), ('sin2', 'input 2'),
-            ('sin3', 'input 3')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1'),
-                   ('sout2', 'output 2'), ('sout3', 'output 3')]
+        inputs = ['sin0', 'sin1', 'sin2', 'sin3']
+        outputs = ['sout0', 'sout1', 'sout2', 'sout3']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="4">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin2">input 2</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout2">output 2</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">input 3</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout3">output 3</TD>\n\t\t</TR>\n'
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin2">sin2</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout2">sout2</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">sin3</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout3">sout3</TD>\n\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
@@ -67,29 +65,28 @@ class TestHTMLRows(TestCase):
 
         # 1 input, 2 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1')]
+        inputs = ['sin0']
+        outputs = ['sout0', 'sout1']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="2">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 1 input, 3 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1'),
-                   ('sout2', 'output 2')]
+        inputs = ['sin0']
+        outputs = ['sout0', 'sout1', 'sout2']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="3" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="3" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="3">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout2">output 2</TD>\n\t\t</TR>\n'
+            '\t\t\t<TD ROWSPAN="1" PORT="sout2">sout2</TD>\n\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
@@ -99,28 +96,28 @@ class TestHTMLRows(TestCase):
 
         # 2 inputs, 1 output
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1')]
-        outputs = [('sout0', 'output 0')]
+        inputs = ['sin0', 'sin1']
+        outputs = ['sout0']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="2">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 3 inputs, 1 output
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1'), ('sin2', 'input 2')]
-        outputs = [('sout0', 'output 0')]
+        inputs = ['sin0', 'sin1', 'sin2']
+        outputs = ['sout0']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="3">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="3" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="3" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin2">input 2</TD>\n\t\t</TR>\n'
+            '\t\t\t<TD ROWSPAN="1" PORT="sin2">sin2</TD>\n\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
@@ -132,36 +129,34 @@ class TestHTMLRows(TestCase):
 
         # 2 inputs, 4 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1'),
-                   ('sout2', 'output 2'), ('sout3', 'output 3')]
+        inputs = ['sin0', 'sin1']
+        outputs = ['sout0', 'sout1', 'sout2', 'sout3']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="4">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout2">output 2</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout3">output 3</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout2">sout2</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout3">sout3</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 4 inputs, 2 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1'), ('sin2', 'input 2'),
-            ('sin3', 'input 3')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1')]
+        inputs = ['sin0', 'sin1', 'sin2', 'sin3']
+        outputs = ['sout0', 'sout1']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="4">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin2">input 2</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sout1">output 1</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">input 3</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin2">sin2</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sout1">sout1</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">sin3</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
@@ -174,31 +169,30 @@ class TestHTMLRows(TestCase):
 
         # 2 inputs, 3 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1'),
-                   ('sout2', 'output 2')]
+        inputs = ['sin0', 'sin1']
+        outputs = ['sout0', 'sout1', 'sout2']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="3">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="2" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout2">output 2</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="2" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout2">sout2</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 3 inputs, 2 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1'), ('sin2', 'input 2')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1')]
+        inputs = ['sin0', 'sin1', 'sin2']
+        outputs = ['sout0', 'sout1']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="3">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="2" PORT="sout1">output 1</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin2">input 2</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="2" PORT="sout1">sout1</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin2">sin2</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
@@ -211,47 +205,43 @@ class TestHTMLRows(TestCase):
 
         # 2 inputs, 7 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1'),
-                   ('sout2', 'output 2'),
-            ('sout3', 'output 3'), ('sout4', 'output 4'), ('sout5', 'output 5'),
-            ('sout6', 'output 6')]
+        inputs = ['sin0', 'sin1']
+        outputs = ['sout0', 'sout1', 'sout2', 'sout3', 'sout4', 'sout5',
+                   'sout6']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="3" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="3" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="7">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">output 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout1">sout1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout2">output 2</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="4" PORT="sin1">input 1</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout3">output 3</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout4">output 4</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout2">sout2</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="4" PORT="sin1">sin1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout3">sout3</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout4">sout4</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sout5">output 5</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout6">output 6</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sout5">sout5</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sout6">sout6</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out
 
         # 7 inputs, 2 outputs
         label = 'entity'
-        inputs = [('sin0', 'input 0'), ('sin1', 'input 1'), ('sin2', 'input 2'),
-            ('sin3', 'input 3'), ('sin4', 'input 4'), ('sin5', 'input 5'),
-            ('sin6', 'input 6')]
-        outputs = [('sout0', 'output 0'), ('sout1', 'output 1')]
+        inputs = ['sin0', 'sin1', 'sin2', 'sin3', 'sin4', 'sin5', 'sin6']
+        outputs = ['sout0', 'sout1']
         expected_out = '\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin0">input 0</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin0">sin0</TD>\n' +\
             '\t\t\t<TD ROWSPAN="7">entity</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="3" PORT="sout0">output 0</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">input 1</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="3" PORT="sout0">sout0</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin1">sin1</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin2">input 2</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">input 3</TD>\n' +\
-            '\t\t\t<TD ROWSPAN="4" PORT="sout1">output 1</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin4">input 4</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin2">sin2</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin3">sin3</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="4" PORT="sout1">sout1</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin4">sin4</TD>\n' +\
             '\t\t</TR>\n\t\t<TR>\n' +\
-            '\t\t\t<TD ROWSPAN="1" PORT="sin5">input 5</TD>\n\t\t</TR>\n' +\
-            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin6">input 6</TD>\n' +\
+            '\t\t\t<TD ROWSPAN="1" PORT="sin5">sin5</TD>\n\t\t</TR>\n' +\
+            '\t\t<TR>\n\t\t\t<TD ROWSPAN="1" PORT="sin6">sin6</TD>\n' +\
             '\t\t</TR>\n'
         actual_out = self._gen._get_html_rows_for_node(label, inputs, outputs)
         assert actual_out == expected_out

@@ -92,7 +92,8 @@ class TestQtItems(TestCase):
         script_path = str(Path(input_scripts_dir)/filename)
         self._script_executer([script_path])
 
-        self._graph.refresh_graph()
+        self._graph.refresh_graph_data()
+        self._graph.generate_qt_items()
         qt_items = self._graph.get_qt_items()
 
         return self._get_qt_item_nb(qt_items) == nb_items
@@ -123,6 +124,7 @@ class TestQtItems(TestCase):
 
 
     def test_empty_graph(self):
-        self._graph.refresh_graph()
+        self._graph.refresh_graph_data()
+        self._graph.generate_qt_items()
         qt_items = self._graph.get_qt_items()
         assert len(qt_items) == 0

@@ -1,10 +1,9 @@
 from __future__ import annotations # To prevent circular dependencies of typing
-from typing import List, Any, Dict, Union, Tuple
+from typing import List, Any, Dict, Union
 from subprocess import Popen, PIPE
 from copy import deepcopy
 
 from PySide2.QtWidgets import QGraphicsItem
-from numpy import isin
 
 from sot_gui.dynamic_graph_communication import DynamicGraphCommunication
 from sot_gui.dot_data_generator import DotDataGenerator
@@ -16,6 +15,7 @@ class GraphElement:
     def __init__(self):
         self._name: str = None
         self._type: str = None
+        self._last_exec: int = None
         self._qt_item: QGraphicsItem = None
 
 
@@ -29,6 +29,12 @@ class GraphElement:
         self._type = type
 
 
+    def last_exec(self) -> int:
+        return self._last_exec
+    def set_last_exec(self, last_exec: int) -> None:
+        self._last_exec = last_exec
+
+
     def qt_item(self) -> QGraphicsItem:
         return self._qt_item
     def set_qt_item(self, qt_item: QGraphicsItem) -> None:
@@ -36,7 +42,6 @@ class GraphElement:
 
 
 class Node(GraphElement):
-    """ TODO """
     def __init__(self):
         super().__init__()
         self._cluster: Cluster = None
@@ -107,8 +112,6 @@ class Node(GraphElement):
 
 
 class InputNode(Node):
-    """ TODO """
-
     def __init__(self, output_edge: Edge):
         super().__init__()
 
@@ -124,8 +127,20 @@ class InputNode(Node):
         self._outputs = [output_port]
 
 
+    def value(self) -> Any:
+        return self.outputs()[0].value()
+    def type(self) -> type:
+        return self._type
+    def port(self) -> Port:
+        return self._outputs[0]
+
+    def child_port(self) -> Port:
+        return self.port().edge().head()
+    def child_node(self) -> Node:
+        return self.child_port().node()
+
+
 class EntityNode(Node):
-    """ TODO """
     def __init__(self, name: str, type: str = None):
         super().__init__()
         self._name = name
@@ -136,14 +151,23 @@ class EntityNode(Node):
 
 
 class Cluster(Node):
-    """ TODO """
+    # Not the number or existing clusters, but the number of clusters ever created:
+    clusters_creation_count = 0
 
-    def __init__(self, name: str, nodes: List[Node]):
+    def __init__(self, label: str, nodes: List[Node]):
         super().__init__()
-        self._name: str = name
+
+        self._name: str = str(Cluster.clusters_creation_count)
+        Cluster.clusters_creation_count += 1
+
+        self._label: str = label
         self._nodes: List[Node] = nodes
-        self._expanded: bool = False
         self._qt_item: QGraphicsItem = None
+
+        # If the cluster is shrinked, it is displayed as a single node. If it is
+        # expanded, it is displayed as a subgraph (section of the graph bounded
+        # by a rectangle):
+        self._expanded: bool = False
 
         # The cluster's ports are its nodes' ports that are not linked to a node
         # in the same cluster
@@ -180,7 +204,8 @@ class Cluster(Node):
 
     def nodes(self) -> List[Node]:
         return self._nodes.copy()
-
+    def label(self) -> str:
+        return self._label
     def is_expanded(self) -> bool:
         return self._expanded
 
@@ -192,23 +217,34 @@ class Cluster(Node):
 
 
 class Port(GraphElement):
-    """ TODO """
+    """ This class represents a node's port, where a signal can be plugged to
+        the node.
+    """
     def __init__(self, name: str, type: str, node: Node):
         super().__init__()
         self._edge = None
         self._name = name
         self._type = type # 'input' or 'output'
         self._node = node
+        self._value = None
 
 
     def node(self) -> Node:
         return self._node
 
 
+    def value(self) -> Any:
+        return self._value
+    def set_value(self, value: Any) -> None:
+        self._value = value
+
+
     def edge(self) -> Edge:
         return self._edge
     def set_edge(self, edge: Edge) -> None:
         self._edge = edge
+        self.set_value(edge.value())
+        self.set_last_exec(edge.last_exec())
         if self._type == 'input':
             edge.set_head(self)
         elif self._type == 'output':
@@ -217,17 +253,28 @@ class Port(GraphElement):
             raise ValueError("Port type must be either 'input' or 'output'")
 
 
-    def plugged_node(self) -> Node:
+    def plugged_port(self) -> Port:
         edge = self.edge()
         if edge is not None:
             if self.type() == 'input':
-                return edge.tail_node()
+                return edge.tail()
             else:
-                return edge.head_node()
+                return edge.head()
+        return None
+
+
+    def plugged_node(self) -> Node:
+        plugged_port = self.plugged_port()
+        if plugged_port is not None:
+            return plugged_port.node()
         return None
 
 
 class ClusterPort(Port):
+    """ This class represents a cluster port. Each node port of a cluster which
+        is linked to a node external to the cluster will be considered as a
+        cluster port.
+    """
     def __init__(self, node_port: Port, node: Cluster):
         super().__init__(None, None, None)
         self._name = f"{node_port.node().name()}_{node_port.name()}"
@@ -241,7 +288,6 @@ class ClusterPort(Port):
 
 
 class Edge(GraphElement):
-    """ TODO """
     def __init__(self, value: Any = None, value_type: str = None,
                 head: Port = None, tail: Port = None):
         super().__init__()
@@ -322,7 +368,8 @@ class Graph:
     def graph_info(self) -> Dict[str, Any]:
         return deepcopy(self._graph_info)
 
-
+    def clusters(self) -> List[Cluster]:
+        return self._clusters.copy()
     def shrinked_clusters(self) -> List[Cluster]:
         return [clust for clust in self._clusters if not clust.is_expanded()]
     def expanded_clusters(self) -> List[Cluster]:
@@ -345,12 +392,32 @@ class Graph:
         self._get_dg_data()
 
 
-    def add_cluster(self, name: str, nodes: List[Node]) -> None:
+    def add_cluster(self, name: str, nodes: List[Node]) -> Cluster:
         """ Adds a cluster to the graph. Checks on the validity of the
             cluster should be made before calling this method.
+
+            Returns:
+                The new cluster.
         """
         new_cluster = Cluster(name, nodes)
         self._clusters.append(new_cluster)
+        return new_cluster
+
+
+    def remove_cluster(self, label: str) -> None:
+        """ Deletes a cluster from the graph elements.
+
+            All the elements it contains are kept, only the cluster is deleted.
+
+            Args:
+                label: label of the cluster to remove.
+        """
+        for index, cluster in enumerate(self._clusters):
+            if cluster.label() == label:
+                for node in cluster.nodes():
+                    node.set_cluster(None)
+                self._clusters.pop(index)
+                return
 
 
     def check_clusterizability(self, nodes: List[Node]) -> bool:
@@ -431,8 +498,28 @@ class Graph:
                 if plug_info['type'] == 'input':
                     self._add_signal_to_dg_data(plug_info, node)
 
+        # Getting the data of outputs with no edges:
+        for node in self._dg_entities:
+            for port in node.outputs():
+                if port.edge() is None:
+                    value = self._dg_communication.get_signal_value(node.name(),
+                            port.name())
+                    port.set_value(value)
+                    last_exec = self._dg_communication.get_exec_time(
+                                node.name(), port.name())
+                    port.set_last_exec(last_exec)
 
-    def _add_signal_to_dg_data(self, plug_info: Dict[str, str], child_node: Node) -> None:
+
+    def _add_signal_to_dg_data(self, plug_info: Dict[str, str],
+                                child_node: Node) -> None:
+        """ Adds a signal to the dynamic graph data stored in this object.
+
+            Args:
+                plug_info: data on the signal (see _parse_signal_description for
+                    details).
+                child_node: head node of the signal, i.e the node having this
+                    signal as an input.
+        """
         sig_name = plug_info['name']
         child_node_name = child_node.name()
 
@@ -448,6 +535,8 @@ class Graph:
 
         signal_value = self._dg_communication.get_signal_value(child_node_name, sig_name)
         new_edge = Edge(signal_value, plug_info['value_type'])
+        last_exec = self._dg_communication.get_exec_time(child_node_name, sig_name)
+        new_edge.set_last_exec(last_exec)
 
         # Linking the signal to the child port:
         child_node.set_edge_for_port(new_edge, plug_info['name'])
@@ -527,7 +616,7 @@ class Graph:
         """ Adds all of the graph's input nodes to the given dot data generator. """
 
         # From now on, every added node will be round:
-        dot_generator.set_node_attributes({'shape': 'circle'})
+        dot_generator.set_node_attributes({'shape': 'ellipse'})
 
         # For every input, we only display a node (and not its output port):
         for node in self._input_nodes:
@@ -539,7 +628,7 @@ class Graph:
             output_ports = node.outputs()
             if len(output_ports) != 1:
                 raise ValueError("An InputNode should have exactly one output.")
-            output_value = output_ports[0].edge().value()
+            output_value = quoted(str(node.value()))
             dot_generator.add_node(node.name(), {'label': output_value})
 
 
@@ -594,8 +683,8 @@ class Graph:
             else:
                 inputs = [port.name() for port in cluster.inputs()]
                 outputs = [port.name() for port in cluster.outputs()]
-                name = cluster.name()
-                dot_generator.add_html_node(name, (inputs, outputs), name)
+                dot_generator.add_html_node(cluster.name(), (inputs, outputs),
+                                            cluster.label())
 
 
     def _add_edges_to_dot_code(self, dot_generator: DotDataGenerator):
@@ -634,6 +723,16 @@ class Graph:
 
     def _add_edge_to_dot_code(self, edge: Edge, head: Port, tail: Port,
                               dot_generator: DotDataGenerator) -> None:
+        """ Adds an edge to a dot code generator.
+
+            Args:
+                edge: the edge to add.
+                head: the head port of the edge, i.e the node input plugged to
+                    this edge.
+                tail: the tail port of the edge, i.e the node output plugged to
+                    this edge.
+                dot_generator: the DotDataGenerator to add the edge to.
+        """
 
         child_port_name = head.name()
         child_node_name = head.node().name()
@@ -645,7 +744,7 @@ class Graph:
          # The value is displayed only if the parent node isn't an InputNode:
         attributes = None
         if not isinstance(tail.node(), InputNode):
-            attributes = {'label': edge.value()}
+            attributes = {'label': quoted(str(edge.value()))}
 
         # The tail port will not be displayed if the parent node is an input
         # value
@@ -728,6 +827,7 @@ class Graph:
 
 
     def _clear_qt_items(self) -> None:
+        """ Clears all of the graph elements' qt items. """
         nodes = self._dg_entities + self._input_nodes + self._clusters
         for node in nodes:
             node.set_qt_item(None)
@@ -819,4 +919,3 @@ class Graph:
     def _get_cluster_for_port(self, port: Port) -> Cluster:
         """ Returns the cluster containing the given node port. """
         return port.node().cluster()
-
